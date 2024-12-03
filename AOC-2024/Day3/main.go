@@ -33,10 +33,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	regexSearch(input)
+	// s := partOneRegexSearch(input)
+	s := partOneCustomSearch(input)
+
+	fmt.Println("Sum of multiplications:", s)
 }
 
-func regexSearch(input string) {
+func partOneRegexSearch(input string) (sum int) {
 	re, err := regexp.Compile(`mul\((\d{1,3}),(\d{1,3})\)`)
 	if err != nil {
 		fmt.Println("[ERROR] compiling regex failed:", err)
@@ -45,7 +48,6 @@ func regexSearch(input string) {
 
 	matches := re.FindAllStringSubmatch(input, -1)
 
-	sum := 0
 	for _, match := range matches {
 		num1, _ := strconv.Atoi(match[1])
 		num2, _ := strconv.Atoi(match[2])
@@ -53,5 +55,53 @@ func regexSearch(input string) {
 		sum += num1 * num2
 	}
 
-	fmt.Println("Sum of multiplications:", sum)
+	return
+}
+
+func partOneCustomSearch(input string) (sum int) {
+	i, n := 0, len(input)
+
+	for i < n {
+		if i+3 < n && input[i:i+4] == "mul(" {
+			// Skip it
+			i += 4
+
+			num1, newIndex := parseNum(input, i)
+			if newIndex == -1 || newIndex >= n || input[newIndex] != ',' {
+				continue
+			}
+
+			// Skip `,`
+			i = newIndex + 1
+
+			num2, newIndex := parseNum(input, i)
+			if newIndex == -1 || newIndex >= n || input[newIndex] != ')' {
+				continue
+			}
+
+			// Skip `)`
+			i = newIndex + 1
+
+			sum += num1 * num2
+		} else {
+			i++
+		}
+	}
+
+	return
+}
+
+func parseNum(input string, startIndex int) (int, int) {
+	i, n := startIndex, len(input)
+
+	for i < n && input[i] >= '0' && input[i] <= '9' {
+		i++
+	}
+
+	if i == startIndex {
+		return 0, -1
+	}
+
+	num, _ := strconv.Atoi(input[startIndex:i])
+	return num, i
 }
