@@ -35,8 +35,10 @@ func main() {
 
 	// s := partOneRegexSearch(input)
 	s := partOneCustomSearch(input)
+	rs := partTwoCustomSearch(input)
 
-	fmt.Println("Sum of multiplications:", s)
+	fmt.Println("Sum of multiplications ->", s)
+	fmt.Println("Restricted sum of multiplications ->", rs)
 }
 
 func partOneRegexSearch(input string) (sum int) {
@@ -86,6 +88,51 @@ func partOneCustomSearch(input string) (sum int) {
 		} else {
 			i++
 		}
+	}
+
+	return
+}
+
+func partTwoCustomSearch(input string) (sum int) {
+	i, n := 0, len(input)
+	mulEnabled := true
+
+	for i < n {
+		if i+6 < n && input[i:i+7] == "don't()" {
+			mulEnabled = false
+			i += 7
+			continue
+		} else if i+3 < n && input[i:i+4] == "do()" {
+			mulEnabled = true
+			i += 4
+			continue
+		}
+
+		if mulEnabled && i+3 < n && input[i:i+4] == "mul(" {
+			i += 4
+
+			num1, newIndex := parseNum(input, i)
+			if newIndex == -1 || newIndex >= n || input[newIndex] != ',' {
+				i = newIndex
+				continue
+			}
+
+			i = newIndex + 1
+
+			num2, newIndex := parseNum(input, i)
+			if newIndex == -1 || newIndex >= n || input[newIndex] != ')' {
+				i = newIndex
+				continue
+			}
+
+			i = newIndex + 1
+
+			sum += num1 * num2
+
+			continue
+		}
+
+		i++
 	}
 
 	return
