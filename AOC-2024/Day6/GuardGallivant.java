@@ -12,8 +12,6 @@ public class GuardGallivant {
     private Position startPos;
 
     public static void main(String[] args) throws Exception {
-        long t = System.currentTimeMillis();
-
         String filepath = (args.length == 0 || args[0] == null) ? "test.txt" : args[0];
 
         GuardGallivant gl = new GuardGallivant();
@@ -26,7 +24,6 @@ public class GuardGallivant {
 
         // Part 2
         System.out.println("Valid obstruction positions count -> " + loopCount);
-        System.out.println("--- " + (System.currentTimeMillis() - t) + " ms ---");
     }
 
     private void readFile(String filepath) throws Exception {
