@@ -12,14 +12,19 @@ public class BridgeRepair {
         ArrayList<Equation> eqs = br.readFile(filepath);
 
         // Part 1
-        System.out.println("Total calibration result -> " + br.calcCalibrationResult(eqs));
+        System.out.println("Total calibration result -> " + br.calcCalibrationResult(eqs, false));
+
+        // Part 2
+        System.out.println("Total calibration result with concat operation -> " + br.calcCalibrationResult(eqs, true));
     }
 
-    private long calcCalibrationResult(ArrayList<Equation> eqs) {
+    private long calcCalibrationResult(ArrayList<Equation> eqs, boolean concatIncluded) {
         long calRes = 0;
 
         for (Equation eq : eqs) {
-            calRes += isCombinationFound(eq.nums[0], 1, eq) ? eq.value : 0;  
+            calRes += concatIncluded
+                ? isCombinationFoundConcat(eq.nums[0], 1, eq) ? eq.value : 0
+                : isCombinationFound(eq.nums[0], 1, eq) ? eq.value : 0; 
         }
 
         return calRes;
@@ -38,6 +43,22 @@ public class BridgeRepair {
         return false;
     }
     
+    private boolean isCombinationFoundConcat(long currResult, int i, Equation eq) {
+        if (currResult > eq.value) return false;
+        if (i >= eq.nums.length) return currResult == eq.value;
+
+        long addRes = currResult + eq.nums[i];
+        if (isCombinationFoundConcat(addRes, i+1, eq)) return true;
+
+        long mulRes = currResult * eq.nums[i];
+        if (isCombinationFoundConcat(mulRes, i+1, eq)) return true;
+
+        long concatRes = Long.parseLong(currResult + Long.toString(eq.nums[i]));
+        if (isCombinationFoundConcat(concatRes, i+1, eq)) return true;
+
+        return false;
+    }
+
     private ArrayList<Equation> readFile(String filepath) throws Exception {
         try {
             File file = new File(filepath);
