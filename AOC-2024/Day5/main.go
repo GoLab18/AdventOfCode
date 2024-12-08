@@ -67,7 +67,10 @@ func main() {
 	}
 
 	// Part 1
-	fmt.Println("Sum of middle page numbers ->", correctOrderSum(rules, updates))
+	fmt.Println("Sum of correct updates' middle page nums ->", correctOrderSum(rules, updates))
+
+	// Part 2
+	fmt.Println("Sum of incorrect updates' middle page nums after sorting ->", incorrectOrderSortedSum(rules, updates))
 }
 
 func correctOrderSum(rules []Rule, updates []Update) int {
@@ -75,6 +78,17 @@ func correctOrderSum(rules []Rule, updates []Update) int {
 	for _, u := range updates {
 		if isValid(u, rules) {
 			sum += getMiddlePage(u)
+		}
+	}
+
+	return sum
+}
+
+func incorrectOrderSortedSum(rules []Rule, updates []Update) int {
+	sum := 0
+	for _, u := range updates {
+		if !isValid(u, rules) {
+			sum += getMiddlePage(sort(u, rules))
 		}
 	}
 
@@ -96,4 +110,33 @@ func isValid(u Update, rules []Rule) bool {
 
 func getMiddlePage(s []int) int {
 	return s[len(s)/2]
+}
+
+func sort(u Update, rules []Rule) []int {
+	unique := make(map[int]struct{})
+	for _, n := range u {
+		unique[n] = struct{}{}
+	}
+
+	for i := 0; i < len(u)-1; i++ {
+		for j := i + 1; j < len(u); j++ {
+			prev, next := u[i], u[j]
+
+			for _, rule := range rules {
+				if _, exists1 := unique[rule[0]]; !exists1 {
+					continue
+				}
+
+				if _, exists2 := unique[rule[1]]; !exists2 {
+					continue
+				}
+
+				if ((prev == rule[1] && next == rule[0]) || (prev == rule[0] && next == rule[1])) && rule[0] == prev {
+					u[i], u[j] = u[j], u[i]
+				}
+			}
+		}
+	}
+
+	return u
 }
