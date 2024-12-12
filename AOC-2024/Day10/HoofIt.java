@@ -15,11 +15,12 @@ public class HoofIt {
         String filepath = (args.length == 0 || args[0] == null) ? "test.txt" : args[0];
 
         ArrayList<int[]> grid = readFile(filepath);
-
-        System.out.println();
         
         // Part 1
-        System.out.println("Trailheads sum -> " + trailheadsSum(grid));
+        System.out.println("Trailheads sum -> " + trailheadsSum(grid, false));
+
+        // Part 2
+        System.out.println("Trailheads' rates sum -> " + trailheadsSum(grid, true));
     }
 
     private static ArrayList<int[]> readFile(String filepath) throws Exception {
@@ -48,15 +49,17 @@ public class HoofIt {
         }
     }
     
-    private static int trailheadsSum(ArrayList<int[]> grid) {
+    private static int trailheadsSum(ArrayList<int[]> grid, boolean isDistinct) {
         int sum = 0;
 
         for (int i = 0; i < grid.size(); i++) {
             for (int j = 0; j < grid.get(0).length; j++) {
                 if (grid.get(i)[j] == 0) {
                     HashSet<String> trailTops = new HashSet<>();
-
-                    for (int[] dir : DIRECTIONS) sum += checkNextTrail(0, i+dir[0], j+dir[1], 0, grid, trailTops);
+                    
+                    for (int[] dir : DIRECTIONS) {
+                        sum += checkNextTrail(0, i+dir[0], j+dir[1], 0, grid, isDistinct ? null : trailTops);
+                    }
                 }
             }
         }
@@ -71,7 +74,11 @@ public class HoofIt {
 
         if (currStep != prevStep + 1) return sum;
 
-        if (prevStep == 8 && currStep == 9) return trailTops.add(i + "," + j) ? sum + 1 : sum;
+        if (prevStep == 8 && currStep == 9) {
+            if (trailTops == null) return sum + 1;
+            
+            return trailTops.add(i + "," + j) ? sum + 1 : sum;
+        }
 
         for (int[] dir : DIRECTIONS) sum = checkNextTrail(sum, i+dir[0], j+dir[1], currStep, grid, trailTops);
 
@@ -80,5 +87,5 @@ public class HoofIt {
 
     private static boolean isInBounds(int i, int j, int rows, int cols) {
         return i >= 0 && i < rows && j >= 0 && j < cols;
-    } 
+    }
 }
