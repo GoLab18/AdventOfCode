@@ -1,47 +1,67 @@
 import 'dart:io';
+import 'dart:math';
 
-Future<void> main(List<String> args) async {
+void main(List<String> args) async {
   final filepath = args.isNotEmpty ? args[0] : "test.txt";
-  
+
   List<int> seq = await readFile(filepath);
 
+  int Function(int) stonesCount = (blinks) {
+    return seq
+    .map((v) => blink(v, 0, blinks, {}))
+    .reduce((a, b) => a + b);
+  };
+
   // Part 1
-  print("Stones count -> ${stonesNum(seq)}");
+  print("Stones count -> ${stonesCount(25)}");
+
+  // Part 2
+  print("Stones count -> ${stonesCount(75)}");
 }
 
 Future<List<int>> readFile(String filepath) async {
-  File file = File(filepath);
+  final file = File(filepath);
 
   if (!await file.exists()) throw StateError("[ERROR] file does not exist");
 
-  var str = await file.readAsString();
+  final lines = await file.readAsLines();
 
-  List<int> seq = str.split(' ').map(int.parse).toList();
+  var seq = <int>[];
+  lines.forEach((line) {
+    seq.addAll(line.split(' ').map(int.parse).toList());
+  });
 
   return seq;
 }
 
-int stonesNum(List<int> seq) {
-  for (var i = 0; i < 25; i++) seq = blink(seq);
-  return seq.length;
-}
+int blink(int stoneNum, int blinks, int end, Map<String, int> cache) {
+  if (blinks >= end) return 1;
 
-List<int> blink(List<int> seq) {
-  List<int> newSeq = [];
+  String key = '$stoneNum,$blinks';
 
-  for (int stone in seq) {
-    if (stone == 0) newSeq.add(1);
-    else if (stone.toString().length % 2 == 0) {
-      String stoneStr = stone.toString();
-      int mid = stoneStr.length ~/ 2;
+  if (cache.containsKey(key)) return cache[key]!;
 
-      int left = int.parse(stoneStr.substring(0, mid));
-      int right = int.parse(stoneStr.substring(mid));
+  int result;
+  if (stoneNum == 0) result = blink(1, blinks + 1, end, cache);
 
-      newSeq.add(left);
-      newSeq.add(right);
-    } else newSeq.add(stone * 2024);
+  else if (stoneNum.toString().length.isEven) {
+    var split = splitEven(stoneNum);
+    result = blink(split[0], blinks + 1, end, cache) + blink(split[1], blinks + 1, end, cache);
   }
 
-  return newSeq;
+  else result = blink(stoneNum * 2024, blinks + 1, end, cache);
+
+  cache[key] = result;
+
+  return result;
+}
+
+List<int> splitEven(int num) {
+  int right = num.toString().length ~/ 2;
+  int div = pow(10, right).toInt();
+
+  int l = num ~/ div;
+  int r = num % div;
+
+  return [l, r];
 }
