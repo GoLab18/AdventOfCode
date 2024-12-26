@@ -63,13 +63,13 @@ struct MazeGrid {
             int ny = y + DIRECTIONS[dir][0];
             int nx = x + DIRECTIONS[dir][1];
 
-            if (grid[y][x] != '#' && cost + 1 == dist[ny][nx][dir]) {
+            if (grid[ny][nx] != '#' && cost + 1 == dist[ny][nx][dir]) {
                 for (const auto &[k, v] : *path) paths[ny][nx][dir][k] = v;
 
                 pq.push(State(ny, nx, dir, cost + 1, &paths[ny][nx][dir]));
             }
 
-            if (grid[y][x] != '#' && cost + 1 < dist[ny][nx][dir]) {
+            if (grid[ny][nx] != '#' && cost + 1 < dist[ny][nx][dir]) {
                 dist[ny][nx][dir] = cost + 1;
 
                 paths[ny][nx][dir] = *path;
