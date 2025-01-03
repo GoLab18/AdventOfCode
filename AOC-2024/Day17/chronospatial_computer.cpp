@@ -4,16 +4,18 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <cmath>
 
 using namespace std;
 
 struct Computer {
-    int A, B, C;
-    vector<int> input;
+    const long long initA, initB, initC;
+    long long A, B, C;
+    vector<long long> input;
 
-    Computer(int A, int B, int C) : A(A), B(B), C(C) {}
+    Computer(long long A, long long B, long long C) : A(A), B(B), C(C), initA(A), initB(B), initC(C) {}
 
-    int comboOperand(int op) {
+    long long comboOperand(long long op) {
         if (op >= 0 && op <= 3) return op;
         if (op == 4) return A;
         if (op == 5) return B;
@@ -21,15 +23,15 @@ struct Computer {
         return C;
     }
 
-    string processInput() {
-        vector<int> output;
+    vector<long long> processInput() {
+        vector<long long> output;
 
         for (size_t i = 0; i < input.size(); i += 2) {
-            int op = input[i + 1];
+            long long op = input[i + 1];
 
             switch (input[i]) {
             case 0:
-                A = A / (1 << comboOperand(op));
+                A = A / (1LL << comboOperand(op));
                 break;
             case 1:
                 B = B ^ op;
@@ -41,27 +43,44 @@ struct Computer {
                 if (A != 0) i = op - 2;
                 break;
             case 4:
-                B = B ^ C;
+                B ^= C;
                 break;
             case 5:
                 output.push_back(comboOperand(op) % 8);
                 break;
             case 6:
-                B = A / (1 << comboOperand(op));
+                B = A / (1LL << comboOperand(op));
                 break;
             case 7:
-                C = A / (1 << comboOperand(op));
+                C = A / (1LL << comboOperand(op));
                 break;
             }
         }
         
-        string o;
-        for (size_t j = 0; j < output.size(); ++j) {
-            o += to_string(output[j]);
-            if (j < output.size() - 1) o += ",";
+        return output;
+    }
+
+    long long properRegAValue() {
+        long long propA = 0;
+
+        while (true) {
+            A = propA;
+            B = initB;
+            C = initC;
+
+            vector<long long> output = processInput();
+
+            if (output == input) return propA;
+
+            for (size_t i = input.size() - 1; i >= 0; i--) {
+                if (input[i] != output[i]) {
+                    propA += pow(8, i);
+                    break;
+                }
+            }
         }
-        
-        return o;
+
+        return propA;
     }
 };
 
@@ -73,7 +92,7 @@ Computer readFile(string filepath) {
         exit(1);
     }
 
-    vector<int> regs;
+    vector<long long> regs;
     regs.reserve(3);
 
     string line;
@@ -98,6 +117,16 @@ Computer readFile(string filepath) {
     return cp;
 }
 
+string toOutputString(vector<long long> &output) {
+    string o;
+    for (size_t j = 0; j < output.size(); ++j) {
+        o += to_string(output[j]);
+        if (j < output.size() - 1) o += ",";
+    }
+
+    return o;
+}
+
 int main(int argc, char* argv[]) {
     string filepath = "test.txt";
 
@@ -106,6 +135,9 @@ int main(int argc, char* argv[]) {
     Computer cp = readFile(filepath);
 
     // Part 1
-    string output = cp.processInput();
-    cout << "Program output -> " << output << endl;
+    vector<long long> output = cp.processInput();
+    cout << "Program output -> " << toOutputString(output) << endl;
+
+    // Part 2
+    cout << "Register A value that outputs the copy of input -> " << cp.properRegAValue() << endl;
 }
