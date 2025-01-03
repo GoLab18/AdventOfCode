@@ -9,34 +9,6 @@ using namespace std;
 
 constexpr int DIRECTIONS[4][2] = {{0, 1}, {-1, 0}, {0, -1}, {1, 0}};
 
-vector<vector<bool>> readFile(string filepath, int n, int bytes) {
-    ifstream f(filepath);
-
-    if (!f) {
-        cerr << "[ERROR] opening file: " << filepath << endl;
-        exit(1);
-    }
-
-    vector<vector<bool>> memBlock(n, vector<bool>(n, false));
-
-    string line;
-    while (bytes > 0 && getline(f, line)) {
-        stringstream ss(line);
-        size_t x, y;
-        char comma;
-        
-        ss >> x >> comma >> y;
-        
-        memBlock[y][x] = true;
-
-        bytes--;
-    }
-
-    f.close();
-
-    return memBlock;
-}
-
 int bfs(vector<vector<bool>> memBlock, int n) {
     queue<pair<size_t, size_t>> q;
     int steps = 0;
@@ -63,6 +35,46 @@ int bfs(vector<vector<bool>> memBlock, int n) {
     return dist[n-1][n-1];
 }
 
+pair<int, string> readAndSolve(string filepath, int n, int bytes) {
+    vector<vector<bool>> memBlock(n, vector<bool>(n, false));
+    ifstream f(filepath);
+    
+    int minStep = -1;
+    string blockCoordsStr = "doesn't exist";
+    
+    if (!f) {
+        cerr << "[ERROR] opening file: " << filepath << endl;
+        exit(1);
+    }
+
+    string line;
+    while (getline(f, line)) {
+        stringstream ss(line);
+        size_t x, y;
+        char comma;
+
+        ss >> x >> comma >> y;
+
+        memBlock[y][x] = true;
+
+
+        int step = bfs(memBlock, n);
+
+        if (bytes == 0) minStep = step;
+
+        if (step == INT_MAX) {
+            blockCoordsStr = to_string(x) + "," + to_string(y);
+            break;
+        }
+
+        bytes--;
+    }
+
+    f.close();
+    
+    return {minStep, blockCoordsStr};
+}
+
 int main(int argc, char* argv[]) {
     string filepath = "test.txt";
     int n = 7;
@@ -74,8 +86,11 @@ int main(int argc, char* argv[]) {
         bytes = stoi(argv[3]);
     }
 
-    vector<vector<bool>> memBlock = readFile(filepath, n, bytes);
+    pair<int, string> ans = readAndSolve(filepath, n, bytes);
 
     // Part 1
-    cout << "Min steps to exit -> " << bfs(memBlock, n) << endl;
+    cout << "Min steps to exit -> " << ans.first << endl;
+
+    // Part 2
+    cout << "First blocking byte -> " << ans.second << endl;
 }
