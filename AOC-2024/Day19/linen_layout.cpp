@@ -39,27 +39,36 @@ pair<unordered_set<string>, vector<string>> readFile(string filepath) {
     return {patterns, designs};
 }
 
-bool canCreatePattern(const string& design, const unordered_set<string>& patterns, unordered_map<string, bool>& memo) {
-    if (design.empty()) return true;
+long long designWays(const string& design, const unordered_set<string>& patterns, unordered_map<string, long long>& memo) {
+    if (design.empty()) return 1;
 
     if (memo.find(design) != memo.end()) return memo[design];
 
+    long long possibleVariations = 0;
+
     for (const string& p : patterns) {
         if (design.substr(0, p.size()) == p) {
-            if (canCreatePattern(design.substr(p.size()), patterns, memo)) return memo[design] = true;
+            possibleVariations += designWays(design.substr(p.size()), patterns, memo);
         }
     }
 
-    return memo[design] = false;
+    return memo[design] = possibleVariations;
 }
 
-int getPossibleDesignsCount(unordered_set<string>& patterns, vector<string>& designs) {
-    int c = 0;
-    unordered_map<string, bool> memoized;
+pair<int, long long> calcDesigns(unordered_set<string>& patterns, vector<string>& designs) {
+    int possibleDesigns = 0;
+    long long totalArrangements = 0;
+    
+    unordered_map<string, long long> memo;
 
-    for (const string& d : designs) if (canCreatePattern(d, patterns, memoized)) c++;
+    for (const string& d : designs) {
+        long long w = designWays(d, patterns, memo);
 
-    return c;
+        if (w > 0) possibleDesigns++;
+        totalArrangements += w;
+    }
+
+    return {possibleDesigns, totalArrangements};
 }
 
 int main(int argc, char* argv[]) {
@@ -69,6 +78,11 @@ int main(int argc, char* argv[]) {
 
     auto [patterns, designs] = readFile(filepath);
 
+    auto [possibleDesigns, possibleDesignsWays] = calcDesigns(patterns, designs);
+
     // Part 1
-    cout << "Possible designs count -> " << getPossibleDesignsCount(patterns, designs) << endl;
+    cout << "Possible designs count -> " << possibleDesigns << endl;
+
+    // Part 2
+    cout << "Different possible ways for designs sum -> " << possibleDesignsWays << endl;
 }
